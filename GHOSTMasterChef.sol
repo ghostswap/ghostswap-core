@@ -428,7 +428,10 @@ library Address {
 
 
 
-pragma solidity >=0.6.0 <0.8.0;
+pragma solidity >=0.6.0 <0.8.0;
+
+
+
 
 /**
  * @title SafeBEP20
@@ -529,7 +532,8 @@ abstract contract Context {
 
 
 
-pragma solidity >=0.6.0 <0.8.0;
+pragma solidity >=0.6.0 <0.8.0;
+
 /**
  * @dev Contract module which provides a basic access control mechanism, where
  * there is an account (an owner) that can be granted exclusive access to
@@ -598,7 +602,11 @@ abstract contract Ownable is Context {
 
 
 
-pragma solidity >=0.4.0;
+pragma solidity >=0.4.0;
+
+
+
+
 
 /**
  * @dev Implementation of the {IBEP20} interface.
@@ -892,7 +900,8 @@ contract BEP20 is Context, IBEP20, Ownable {
 
 // File: contracts\SPIRITToken.sol
 
-pragma solidity 0.6.12;
+pragma solidity 0.6.12;
+
 
 // SpiritToken with Governance.
 contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
@@ -1137,7 +1146,12 @@ contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
 
 
 
-pragma solidity 0.6.12;
+pragma solidity 0.6.12;
+
+
+
+
+
 
 // MasterChef is the master of Spirit. He can make Spirit and he is a fair guy.
 //
