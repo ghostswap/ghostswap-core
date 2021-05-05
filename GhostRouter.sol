@@ -252,9 +252,9 @@ library PancakeLibrary {
 
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, 'SpiritLibrary: IDENTICAL_ADDRESSES');
+        require(tokenA != tokenB, 'GhostLibrary: IDENTICAL_ADDRESSES');
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), 'SpiritLibrary: ZERO_ADDRESS');
+        require(token0 != address(0), 'GhostLibrary: ZERO_ADDRESS');
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
@@ -278,15 +278,15 @@ library PancakeLibrary {
 
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
     function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
-        require(amountA > 0, 'SpiritLibrary: INSUFFICIENT_AMOUNT');
-        require(reserveA > 0 && reserveB > 0, 'SpiritLibrary: INSUFFICIENT_LIQUIDITY');
+        require(amountA > 0, 'ghostLibrary: INSUFFICIENT_AMOUNT');
+        require(reserveA > 0 && reserveB > 0, 'ghostLibrary: INSUFFICIENT_LIQUIDITY');
         amountB = amountA.mul(reserveB) / reserveA;
     }
 
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
-        require(amountIn > 0, 'SpiritLibrary: INSUFFICIENT_INPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'SpiritLibrary: INSUFFICIENT_LIQUIDITY');
+        require(amountIn > 0, 'ghostLibrary: INSUFFICIENT_INPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'ghostLibrary: INSUFFICIENT_LIQUIDITY');
         uint amountInWithFee = amountIn.mul(997);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
@@ -295,8 +295,8 @@ library PancakeLibrary {
 
     // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
-        require(amountOut > 0, 'SpiritLibrary: INSUFFICIENT_OUTPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'SpiritLibrary: INSUFFICIENT_LIQUIDITY');
+        require(amountOut > 0, 'ghostLibrary: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'ghostLibrary: INSUFFICIENT_LIQUIDITY');
         uint numerator = reserveIn.mul(amountOut).mul(1000);
         uint denominator = reserveOut.sub(amountOut).mul(997);
         amountIn = (numerator / denominator).add(1);
@@ -304,7 +304,7 @@ library PancakeLibrary {
 
     // performs chained getAmountOut calculations on any number of pairs
     function getAmountsOut(address factory, uint amountIn, address[] memory path) internal view returns (uint[] memory amounts) {
-        require(path.length >= 2, 'SpiritLibrary: INVALID_PATH');
+        require(path.length >= 2, 'ghostLibrary: INVALID_PATH');
         amounts = new uint[](path.length);
         amounts[0] = amountIn;
         for (uint i; i < path.length - 1; i++) {
@@ -315,7 +315,7 @@ library PancakeLibrary {
 
     // performs chained getAmountIn calculations on any number of pairs
     function getAmountsIn(address factory, uint amountOut, address[] memory path) internal view returns (uint[] memory amounts) {
-        require(path.length >= 2, 'SpiritLibrary: INVALID_PATH');
+        require(path.length >= 2, 'ghostLibrary: INVALID_PATH');
         amounts = new uint[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
@@ -347,14 +347,14 @@ interface IWETH {
     function withdraw(uint) external;
 }
 
-contract SpiritRouter is IPancakeRouter02 {
+contract ghostRouter is IPancakeRouter02 {
     using SafeMath for uint;
 
     address public immutable override factory;
     address public immutable override WETH;
 
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'SpiritRouter: EXPIRED');
+        require(deadline >= block.timestamp, 'ghostRouter: EXPIRED');
         _;
     }
 
@@ -386,12 +386,12 @@ contract SpiritRouter is IPancakeRouter02 {
         } else {
             uint amountBOptimal = PancakeLibrary.quote(amountADesired, reserveA, reserveB);
             if (amountBOptimal <= amountBDesired) {
-                require(amountBOptimal >= amountBMin, 'SpiritRouter: INSUFFICIENT_B_AMOUNT');
+                require(amountBOptimal >= amountBMin, 'ghostRouter: INSUFFICIENT_B_AMOUNT');
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
                 uint amountAOptimal = PancakeLibrary.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
-                require(amountAOptimal >= amountAMin, 'SpiritRouter: INSUFFICIENT_A_AMOUNT');
+                require(amountAOptimal >= amountAMin, 'ghostRouter: INSUFFICIENT_A_AMOUNT');
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
         }
@@ -452,8 +452,8 @@ contract SpiritRouter is IPancakeRouter02 {
         (uint amount0, uint amount1) = IPancakePair(pair).burn(to);
         (address token0,) = PancakeLibrary.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-        require(amountA >= amountAMin, 'SpiritRouter: INSUFFICIENT_A_AMOUNT');
-        require(amountB >= amountBMin, 'SpiritRouter: INSUFFICIENT_B_AMOUNT');
+        require(amountA >= amountAMin, 'ghostRouter: INSUFFICIENT_A_AMOUNT');
+        require(amountB >= amountBMin, 'ghostRouter: INSUFFICIENT_B_AMOUNT');
     }
     function removeLiquidityETH(
         address token,
@@ -566,9 +566,9 @@ contract SpiritRouter is IPancakeRouter02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
         amounts = PancakeLibrary.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'SpiritRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amounts[amounts.length - 1] >= amountOutMin, 'ghostRouter: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
@@ -581,9 +581,9 @@ contract SpiritRouter is IPancakeRouter02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
         amounts = PancakeLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'SpiritRouter: EXCESSIVE_INPUT_AMOUNT');
+        require(amounts[0] <= amountInMax, 'ghostRouter: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
@@ -597,10 +597,10 @@ contract SpiritRouter is IPancakeRouter02 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
-        require(path[0] == WETH, 'SpiritRouter: INVALID_PATH');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
+        require(path[0] == WETH, 'ghostRouter: INVALID_PATH');
         amounts = PancakeLibrary.getAmountsOut(factory, msg.value, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'SpiritRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amounts[amounts.length - 1] >= amountOutMin, 'ghostRouter: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
@@ -612,10 +612,10 @@ contract SpiritRouter is IPancakeRouter02 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
-        require(path[path.length - 1] == WETH, 'SpiritRouter: INVALID_PATH');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
+        require(path[path.length - 1] == WETH, 'ghostRouter: INVALID_PATH');
         amounts = PancakeLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= amountInMax, 'SpiritRouter: EXCESSIVE_INPUT_AMOUNT');
+        require(amounts[0] <= amountInMax, 'ghostRouter: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
@@ -630,10 +630,10 @@ contract SpiritRouter is IPancakeRouter02 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
-        require(path[path.length - 1] == WETH, 'SpiritRouter: INVALID_PATH');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
+        require(path[path.length - 1] == WETH, 'ghostRouter: INVALID_PATH');
         amounts = PancakeLibrary.getAmountsOut(factory, amountIn, path);
-        require(amounts[amounts.length - 1] >= amountOutMin, 'SpiritRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amounts[amounts.length - 1] >= amountOutMin, 'ghostRouter: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
@@ -649,10 +649,10 @@ contract SpiritRouter is IPancakeRouter02 {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
-        require(path[0] == WETH, 'SpiritRouter: INVALID_PATH');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
+        require(path[0] == WETH, 'ghostRouter: INVALID_PATH');
         amounts = PancakeLibrary.getAmountsIn(factory, amountOut, path);
-        require(amounts[0] <= msg.value, 'SpiritRouter: EXCESSIVE_INPUT_AMOUNT');
+        require(amounts[0] <= msg.value, 'ghostRouter: EXCESSIVE_INPUT_AMOUNT');
         IWETH(WETH).deposit{value: amounts[0]}();
         assert(IWETH(WETH).transfer(PancakeLibrary.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
@@ -687,7 +687,7 @@ contract SpiritRouter is IPancakeRouter02 {
         address to,
         uint deadline
     ) external virtual override ensure(deadline) {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amountIn
         );
@@ -695,7 +695,7 @@ contract SpiritRouter is IPancakeRouter02 {
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            'SpiritRouter: INSUFFICIENT_OUTPUT_AMOUNT'
+            'ghostRouter: INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
     function swapExactETHForTokensSupportingFeeOnTransferTokens(
@@ -710,8 +710,8 @@ contract SpiritRouter is IPancakeRouter02 {
         payable
         ensure(deadline)
     {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
-        require(path[0] == WETH, 'SpiritRouter: INVALID_PATH');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
+        require(path[0] == WETH, 'ghostRouter: INVALID_PATH');
         uint amountIn = msg.value;
         IWETH(WETH).deposit{value: amountIn}();
         assert(IWETH(WETH).transfer(PancakeLibrary.pairFor(factory, path[0], path[1]), amountIn));
@@ -719,7 +719,7 @@ contract SpiritRouter is IPancakeRouter02 {
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
-            'SpiritRouter: INSUFFICIENT_OUTPUT_AMOUNT'
+            'ghostRouter: INSUFFICIENT_OUTPUT_AMOUNT'
         );
     }
     function swapExactTokensForETHSupportingFeeOnTransferTokens(
@@ -734,14 +734,14 @@ contract SpiritRouter is IPancakeRouter02 {
         override
         ensure(deadline)
     {
-        require(!IPancakeFactory(factory).locked(), 'SpiritRouter: Permission Denied');
-        require(path[path.length - 1] == WETH, 'SpiritRouter: INVALID_PATH');
+        require(!IPancakeFactory(factory).locked(), 'ghostRouter: Permission Denied');
+        require(path[path.length - 1] == WETH, 'ghostRouter: INVALID_PATH');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amountIn
         );
         _swapSupportingFeeOnTransferTokens(path, address(this));
         uint amountOut = IERC20(WETH).balanceOf(address(this));
-        require(amountOut >= amountOutMin, 'SpiritRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amountOut >= amountOutMin, 'ghostRouter: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).withdraw(amountOut);
         TransferHelper.safeTransferETH(to, amountOut);
     }
