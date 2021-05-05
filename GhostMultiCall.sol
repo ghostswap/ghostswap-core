@@ -8,7 +8,7 @@ pragma experimental ABIEncoderV2;
 /// @author Joshua Levine <joshua@makerdao.com>
 /// @author Nick Johnson <arachnid@notdot.net>
 
-contract SpiritMulticall {
+contract GhostMulticall {
     struct Call {
         address target;
         bytes callData;
