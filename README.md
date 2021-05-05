@@ -1,4 +1,4 @@
-# spiritswap-core
-Smart contracts for SpiritSwap DEX. 
+# ghostswap-core
+Smart contracts for GhostSwap DEX. 
 
-https://app.spiritswap.finance
+https://app.ghostswap.org
