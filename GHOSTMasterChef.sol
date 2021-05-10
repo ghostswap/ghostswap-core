@@ -898,13 +898,13 @@ contract BEP20 is Context, IBEP20, Ownable {
     }
 }
 
-// File: contracts\SPIRITToken.sol
+// File: contracts\GhostToken.sol
 
 pragma solidity 0.6.12;
 
 
-// SpiritToken with Governance.
-contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
+// GhostToken with Governance.
+contract GhostToken is BEP20('GhostSwap Token', 'GHOST') {
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
@@ -1013,9 +1013,9 @@ contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
         );
 
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "SPIRIT::delegateBySig: invalid signature");
-        require(nonce == nonces[signatory]++, "SPIRIT::delegateBySig: invalid nonce");
-        require(now <= expiry, "SPIRIT::delegateBySig: signature expired");
+        require(signatory != address(0), "GHOST::delegateBySig: invalid signature");
+        require(nonce == nonces[signatory]++, "GHOST::delegateBySig: invalid nonce");
+        require(now <= expiry, "GHOST::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 
@@ -1045,7 +1045,7 @@ contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
         view
         returns (uint256)
     {
-        require(blockNumber < block.number, "SPIRIT::getPriorVotes: not yet determined");
+        require(blockNumber < block.number, "GHOST::getPriorVotes: not yet determined");
 
         uint32 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) {
@@ -1082,7 +1082,7 @@ contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
         internal
     {
         address currentDelegate = _delegates[delegator];
-        uint256 delegatorBalance = balanceOf(delegator); // balance of underlying SPIRITs (not scaled);
+        uint256 delegatorBalance = balanceOf(delegator); // balance of underlying GHOST (not scaled);
         _delegates[delegator] = delegatee;
 
         emit DelegateChanged(delegator, currentDelegate, delegatee);
@@ -1118,7 +1118,7 @@ contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
     )
         internal
     {
-        uint32 blockNumber = safe32(block.number, "SPIRIT::_writeCheckpoint: block number exceeds 32 bits");
+        uint32 blockNumber = safe32(block.number, "GHOST::_writeCheckpoint: block number exceeds 32 bits");
 
         if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
             checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
@@ -1142,7 +1142,7 @@ contract SpiritToken is BEP20('SpiritSwap Token', 'SPIRIT') {
     }
 }
 
-// File: contracts\SPIRITMasterChef.sol
+// File: contracts\GhostMasterChef.sol
 
 
 
@@ -1153,14 +1153,14 @@ pragma solidity 0.6.12;
 
 
 
-// MasterChef is the master of Spirit. He can make Spirit and he is a fair guy.
+// MasterChef is the master of Ghost. He can make Ghost and he is a fair guy.
 //
 // Note that it's ownable and the owner wields tremendous power. The ownership
-// will be transferred to a governance smart contract once SPIRIT is sufficiently
+// will be transferred to a governance smart contract once Ghost is sufficiently
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
-contract SpiritMasterChef is Ownable {
+contract GhostMasterChef is Ownable {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 
@@ -1169,13 +1169,13 @@ contract SpiritMasterChef is Ownable {
         uint256 amount;         // How many LP tokens the user has provided.
         uint256 rewardDebt;     // Reward debt. See explanation below.
         //
-        // We do some fancy math here. Basically, any point in time, the amount of SPIRITs
+        // We do some fancy math here. Basically, any point in time, the amount of Ghosts
         // entitled to a user but is pending to be distributed is:
         //
-        //   pending reward = (user.amount * pool.accSpiritPerShare) - user.rewardDebt
+        //   pending reward = (user.amount * pool.accGhostPerShare) - user.rewardDebt
         //
         // Whenever a user deposits or withdraws LP tokens to a pool. Here's what happens:
-        //   1. The pool's `accSpiritPerShare` (and `lastRewardBlock`) gets updated.
+        //   1. The pool's `accGhostPerShare` (and `lastRewardBlock`) gets updated.
         //   2. User receives the pending reward sent to his/her address.
         //   3. User's `amount` gets updated.
         //   4. User's `rewardDebt` gets updated.
@@ -1184,19 +1184,19 @@ contract SpiritMasterChef is Ownable {
     // Info of each pool.
     struct PoolInfo {
         IBEP20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. SPIRITs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that SPIRITs distribution occurs.
-        uint256 accSpiritPerShare;   // Accumulated SPIRITs per share, times 1e12. See below.
+        uint256 allocPoint;       // How many allocation points assigned to this pool. Ghosts to distribute per block.
+        uint256 lastRewardBlock;  // Last block number that Ghosts distribution occurs.
+        uint256 accGhostPerShare;   // Accumulated Ghosts per share, times 1e12. See below.
         uint16 depositFeeBP;      // Deposit fee in basis points
     }
 
-    // The SPIRIT TOKEN!
-    SpiritToken public spirit;
+    // The Ghost TOKEN!
+    GhostToken public Ghost;
     // Dev address.
     address public devaddr;
-    // SPIRIT tokens created per block.
-    uint256 public spiritPerBlock;
-    // Bonus muliplier for early spirit makers.
+    // Ghost tokens created per block.
+    uint256 public GhostPerBlock;
+    // Bonus muliplier for early Ghost makers.
     uint256 public constant BONUS_MULTIPLIER = 1;
     // Deposit Fee address
     address public feeAddress;
@@ -1207,7 +1207,7 @@ contract SpiritMasterChef is Ownable {
     mapping (uint256 => mapping (address => UserInfo)) public userInfo;
     // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
-    // The block number when SPIRIT mining starts.
+    // The block number when Ghost mining starts.
     uint256 public startBlock;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
@@ -1215,16 +1215,16 @@ contract SpiritMasterChef is Ownable {
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(
-        SpiritToken _spirit,
+        GhostToken _ghost,
         address _devaddr,
         address _feeAddress,
-        uint256 _spiritPerBlock,
+        uint256 ghost,
         uint256 _startBlock
     ) public {
-        spirit = _spirit;
+        ghost = _ghost;
         devaddr = _devaddr;
         feeAddress = _feeAddress;
-        spiritPerBlock = _spiritPerBlock;
+        ghostPerBlock = _ghostPerBlock;
         startBlock = _startBlock;
     }
 
@@ -1245,12 +1245,12 @@ contract SpiritMasterChef is Ownable {
             lpToken: _lpToken,
             allocPoint: _allocPoint,
             lastRewardBlock: lastRewardBlock,
-            accSpiritPerShare: 0,
+            accGhostPerShare: 0,
             depositFeeBP: _depositFeeBP
         }));
     }
 
-    // Update the given pool's SPIRIT allocation point and deposit fee. Can only be called by the owner.
+    // Update the given pool's Ghost allocation point and deposit fee. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
         require(_depositFeeBP <= 10000, "set: invalid deposit fee basis points");
         if (_withUpdate) {
@@ -1266,18 +1266,18 @@ contract SpiritMasterChef is Ownable {
         return _to.sub(_from).mul(BONUS_MULTIPLIER);
     }
 
-    // View function to see pending SPIRITs on frontend.
-    function pendingSpirit(uint256 _pid, address _user) external view returns (uint256) {
+    // View function to see pending Ghosts on frontend.
+    function pendingGhost(uint256 _pid, address _user) external view returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
-        uint256 accSpiritPerShare = pool.accSpiritPerShare;
+        uint256 accGhostPerShare = pool.accGhostPerShare;
         uint256 lpSupply = pool.lpToken.balanceOf(address(this));
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-            uint256 spiritReward = multiplier.mul(spiritPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-            accSpiritPerShare = accSpiritPerShare.add(spiritReward.mul(1e12).div(lpSupply));
+            uint256 ghostReward = multiplier.mul(ghostPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+            accGhostPerShare = accGhostPerShare.add(ghostReward.mul(1e12).div(lpSupply));
         }
-        return user.amount.mul(accSpiritPerShare).div(1e12).sub(user.rewardDebt);
+        return user.amount.mul(accGhostPerShare).div(1e12).sub(user.rewardDebt);
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
@@ -1300,22 +1300,22 @@ contract SpiritMasterChef is Ownable {
             return;
         }
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-        uint256 spiritReward = multiplier.mul(spiritPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-        spirit.mint(devaddr, spiritReward.div(10));
-        spirit.mint(address(this), spiritReward);
-        pool.accSpiritPerShare = pool.accSpiritPerShare.add(spiritReward.mul(1e12).div(lpSupply));
+        uint256 ghostReward = multiplier.mul(ghostPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+        ghost.mint(devaddr, ghostReward.div(10));
+        ghost.mint(address(this), ghostReward);
+        pool.accGhostPerShare = pool.accGhostPerShare.add(ghostReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
 
-    // Deposit LP tokens to MasterChef for SPIRIT allocation.
+    // Deposit LP tokens to MasterChef for GHOST allocation.
     function deposit(uint256 _pid, uint256 _amount) public {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
         if (user.amount > 0) {
-            uint256 pending = user.amount.mul(pool.accSpiritPerShare).div(1e12).sub(user.rewardDebt);
+            uint256 pending = user.amount.mul(pool.accGhostPerShare).div(1e12).sub(user.rewardDebt);
             if(pending > 0) {
-                safeSpiritTransfer(msg.sender, pending);
+                safeGhostTransfer(msg.sender, pending);
             }
         }
         if(_amount > 0) {
@@ -1328,7 +1328,7 @@ contract SpiritMasterChef is Ownable {
                 user.amount = user.amount.add(_amount);
             }
         }
-        user.rewardDebt = user.amount.mul(pool.accSpiritPerShare).div(1e12);
+        user.rewardDebt = user.amount.mul(pool.accGhostPerShare).div(1e12);
         emit Deposit(msg.sender, _pid, _amount);
     }
 
@@ -1338,15 +1338,15 @@ contract SpiritMasterChef is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
         updatePool(_pid);
-        uint256 pending = user.amount.mul(pool.accSpiritPerShare).div(1e12).sub(user.rewardDebt);
+        uint256 pending = user.amount.mul(pool.accGhostPerShare).div(1e12).sub(user.rewardDebt);
         if(pending > 0) {
-            safeSpiritTransfer(msg.sender, pending);
+            safeGhostTransfer(msg.sender, pending);
         }
         if(_amount > 0) {
             user.amount = user.amount.sub(_amount);
             pool.lpToken.safeTransfer(address(msg.sender), _amount);
         }
-        user.rewardDebt = user.amount.mul(pool.accSpiritPerShare).div(1e12);
+        user.rewardDebt = user.amount.mul(pool.accGhostPerShare).div(1e12);
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
@@ -1361,13 +1361,13 @@ contract SpiritMasterChef is Ownable {
         emit EmergencyWithdraw(msg.sender, _pid, amount);
     }
 
-    // Safe spirit transfer function, just in case if rounding error causes pool to not have enough SPIRITs.
-    function safeSpiritTransfer(address _to, uint256 _amount) internal {
-        uint256 spiritBal = spirit.balanceOf(address(this));
-        if (_amount > spiritBal) {
-            spirit.transfer(_to, spiritBal);
+    // Safe Ghost transfer function, just in case if rounding error causes pool to not have enough Ghosts.
+    function safeGhostTransfer(address _to, uint256 _amount) internal {
+        uint256 GhostBal = Ghost.balanceOf(address(this));
+        if (_amount > GhostBal) {
+            Ghost.transfer(_to, GhostBal);
         } else {
-            spirit.transfer(_to, _amount);
+            Ghost.transfer(_to, _amount);
         }
     }
 
@@ -1383,8 +1383,8 @@ contract SpiritMasterChef is Ownable {
     }
 
     //Pancake has to add hidden dummy pools inorder to alter the emission, here we make it simple and transparent to all.
-    function updateEmissionRate(uint256 _spiritPerBlock) public onlyOwner {
+    function updateEmissionRate(uint256 _GhostPerBlock) public onlyOwner {
         massUpdatePools();
-        spiritPerBlock = _spiritPerBlock;
+        GhostPerBlock = _GhostPerBlock;
     }
 }
